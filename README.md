@@ -18,7 +18,7 @@
 
     `dt` is also a crucial determining factor here, as when `dt` is not small enough, the computational approximation for the objects may not be a very good representation for when their movements are continuous.
 
-- [課題４](#課題４) - Solar system simulator - It will show Venus, Earth, and Mars (Mercury is too close and the gas giants are too far away to be shown to scale)
+- [課題４](#課題４) - Solar system simulator - It will show Mercury, Venus, Earth, and Mars (the gas giants are too far away to be shown to scale)
 
     [![image.png](https://i.postimg.cc/Ssvhgn8K/image.png)](https://postimg.cc/jwPm5dMV)
 
@@ -148,7 +148,7 @@ Execute:
 [![image.png](https://i.postimg.cc/pXzgqrPV/image.png)](https://postimg.cc/PPf3qtL0)  [![image.png](https://i.postimg.cc/Ssvhgn8K/image.png)](https://postimg.cc/jwPm5dMV)
 
 
-I have made a simple solar system simulation model, where we assume planets revolve around the sun on a 2D plane (in reality, the planets, especially the gas giants, do not all revolve around the sun on a flat plane). In this simulator, 3 planets are shown to revolve around the sun: Venus, Earth, and mars. Due to Mercury being too close to the Sun and the gas giants (Jupiter, Saturn, Uranus, and Neptune) being too far away from the sun, the other 5 planets may not be shown on the screen. 
+I have made a simple solar system simulation model, where we assume planets revolve around the sun on a 2D plane (in reality, the planets, especially the gas giants, do not all revolve around the sun on a flat plane). In this simulator, 4 planets are shown to revolve around the sun: the gas giants (Jupiter, Saturn, Uranus, and Neptune) being too far away from the sun, so those 4 planets are not shown on the screen. 
 
 To make this simulator possible, I have gathered the following information:
 
@@ -176,11 +176,18 @@ Execute:
 ./my_bouncing4 5 solar.dat
 ```
 
-Then, an output that looks something like this will show, with visibly 4 planets orbiting around the Sun:
+The format is `./my_bouncing4 [number of celestial bodies you want to print] [file name]`
+
+If you try to print more than 5 celestial bodies (for instance: `./my_bouncing4 6 solar.dat`), you will be returned an error saying that there are only 5 celestial objects max. 
+
+If you try to print less than 5, then simply you will have n-1 planets and the sun on the screen.
+
+With the correct command, an output that looks something like this will show, with visibly 4 planets orbiting around the Sun (using the execution above):
 
 [![image.png](https://i.postimg.cc/bNfKPZb4/image.png)](https://postimg.cc/7bXBMYKN)
 
 
+## Brief Explanation of code
 -----
 
 First, a solar.dat file is read, which stores the data of planets in the following format:
@@ -196,6 +203,31 @@ First, a solar.dat file is read, which stores the data of planets in the followi
 ```
 
 This file is read, and according to the planets, mass, radial location, distance (au), and radial velocity (in degrees per day), we calculate where the planets would be on a scaled-down Cartesian x-y plane. The velocities for each planet is also calculated in a similar manner, and we make sure that the gravitational force between the planets (primarily the Sun, due to its huge mass) affects their orbit.
+
+When reading the file, I had to make sure that the information of the planets were succesfully translated onto the x-y plane. To do this, the following code was used within the `read_objects` function:
+
+```
+double radius, degree, velocity; //there are the initial values that will be read in from the file
+sscanf(buffer, "%lf %lf %lf %lf", &objs[i].m, &degree, &radius, &velocity);
+double distance = radius * cond.au; // calculate the distance in meters (radius is expressed in au)
+double radians = degree / 360 * 2 * M_PI;
+double radial_velocity = velocity / 360 * 2 * M_PI;
+
+objs[i].x = distance * cos(radians);
+objs[i].y = distance * -sin(radians);
+
+objs[i].vx = distance * radial_velocity * -sin(radians) / (60*60*24);
+objs[i].vy = distance * radial_velocity * -cos(radians) / (60*60*24);
+```
+
+- The x-y locations of the planets were determined using their distance from the sun and their currrent angle displacement from the sun (`cos` for the x axis and `-sin` for the y axis)
+
+- The velocities of the planets were determined by first retrieving the radial velocities of the planets in radians, then converting them to cartesian velocity (`-cos` for vx and `-sin` for vy)
+
+Then, once the locations of the planets in the x-y plane was determined, I made sure to scale them down so that they could be represented on the screen. Within the `my_plot_objects` function, it can be seen that the x axis is elongated by double that of the y-axis, because in the terminal the x is shorter than the y ( to prevent representation of the planets orbiting in a oval/non-circular manner). Also, the time was adjusted to represent not simply the number of seconds but the number of days elapsed. As will be explained below, there are several reasons why Earth's orbit may not be exactly 365 days in this simulation.
+
+Within `main()`, the initial conditions within `Condition cond` were updated to work for this solar system model.
+
 
 While this is an interesting model, there are indeed limitations:
 

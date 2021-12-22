@@ -48,6 +48,12 @@ int main(int argc, char **argv){
         return EXIT_FAILURE;
     }
 
+    
+    if (atoi(argv[1]) >= 6) {
+        fprintf(stderr, "Usage: There are only 5 celestial objects max\n");
+        return EXIT_FAILURE;
+    }
+
 
     size_t objnum = atoi(argv[1]);
     Object objects[objnum];
@@ -202,15 +208,6 @@ void read_objects(int numobj, Object objs[], char filename[], const Condition co
     }
 
     srand(time(0));
-    //if there are not enough, then fill in objects randomly
-    while (i < numobj) {
-        objs[i].m = (double)rand() / RAND_MAX * 40 + 40;
-        objs[i].x = (double)rand() / RAND_MAX * cond.width - cond.width / 2;
-        objs[i].y = (double)rand() / RAND_MAX * cond.height - cond.height / 2;
-        objs[i].vx = (double)rand() / RAND_MAX * 20 - 10;
-        objs[i].vy = (double)rand() / RAND_MAX * 20 - 10;
-        i++;
-    }
 
     fclose(fp);
     
